@@ -1,0 +1,8 @@
+pandas
+numpy
+scikit-learn     
+bokeh
+black
+ipykernel
+black[jupyter]
+flake8
