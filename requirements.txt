@@ -6,3 +6,6 @@ black
 ipykernel
 black[jupyter]
 flake8
+jsonapi_client
+leafmap
+geopandas
