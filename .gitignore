@@ -4,4 +4,4 @@
 .DS_Store
 /tmp/*
 /.intel_env/*
-*/__pycache__/*
+src/__pycache__/*

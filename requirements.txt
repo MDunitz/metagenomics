@@ -11,3 +11,4 @@ leafmap
 geopandas
 biom-format
 scikit-bio
+anndata
