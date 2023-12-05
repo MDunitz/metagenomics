@@ -48,15 +48,12 @@ def get_sample_analyses(api_path, study_samples, analysis_limit=10):
             filtering = Modifier(f"sample_accession={sample.sample_id}")
             analysis = map(lambda r: r.json, mgnify.iterate('analyses', filter=filtering))
             analysis = pd.json_normalize(analysis)
-            analysis['sample_id'] = sample.sample_id
+            analysis['sample_accession'] = sample.sample_id
             analysis['sample_description'] = sample.sample_description
             analysis['environment'] = sample.environment
             analyses.append(analysis)
-    print(f"THERE ARE {len(analyses)} being added to the df")
     analyses_df = pd.concat(analyses)
-    print(f"the df is {analyses_df.shape}")
     analyses_df[ANALYSIS_SUMMARY_COL_NAMES] = analyses_df.apply(handle_analysis_summary, axis='columns', result_type='expand')
-    print(f"but now the df is {analyses_df.shape}")
     return analyses_df
 
 

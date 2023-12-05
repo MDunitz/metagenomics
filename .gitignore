@@ -3,3 +3,5 @@
 /figures/*
 .DS_Store
 /tmp/*
+/.intel_env/*
+*/__pycache__/*

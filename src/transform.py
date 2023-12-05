@@ -6,10 +6,12 @@ def read_otu_tsv_file(file_path):
     sample_id = file_path.split("/")[-1].split('_')[0]
     study_id = file_path.split("/")[-2]
     otu_df=pd.read_table(file_path,sep='\t',header=1)
+    accession_id = otu_df.columns[1]
     otu_df.rename(columns={"# OTU ID": "OTU_ID", otu_df.columns[1]: "Count"}, inplace=True)
     otu_df["Taxa Dict"] = otu_df.apply(split_taxonomy_info, axis=1)
     otu_df["Study_id"] = study_id
-    otu_df["Sample_id"] = sample_id
+    otu_df["Analysis_id"] = sample_id
+    otu_df['Sample_id'] = accession_id
     return otu_df
 
 sample_dict = {'Super Kingdom': None,
@@ -53,8 +55,8 @@ def split_phyla_dict(row):
 
 def build_otu_count_df(df_to_add, count_df=None):
     if count_df is None:
-        count_df = pd.DataFrame(columns=["OTU_ID", "Count", "Study_id", "Sample_id"])
-    sub_df = df_to_add[["OTU_ID", "Count", "Study_id", "Sample_id"]]
+        count_df = pd.DataFrame(columns=["OTU_ID", "Count", "Study_id", "Sample_id", "Analysis_id"])
+    sub_df = df_to_add[["OTU_ID", "Count", "Study_id", "Sample_id", "Analysis_id"]]
     df = pd.concat([count_df, sub_df])
     return df
 
