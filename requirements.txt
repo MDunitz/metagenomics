@@ -9,3 +9,4 @@ flake8
 jsonapi_client
 leafmap
 geopandas
+biom-format

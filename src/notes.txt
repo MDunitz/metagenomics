@@ -1,0 +1,4 @@
+
+The ecology of microbial communities associated with Macrosystis pyrifera
+site: https://www.ebi.ac.uk/metagenomics/studies/MGYS00002998?analyses-page=3#overview
+api: https://www.ebi.ac.uk/metagenomics/api/v1/studies/MGYS00002998

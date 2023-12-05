@@ -2,3 +2,4 @@
 /.env/*
 /figures/*
 .DS_Store
+/tmp/*
