@@ -1,7 +1,9 @@
 
 import pandas as pd
+import os
 ## todo switch to dask
 from jsonapi_client import Session, Modifier
+from pathlib import Path
 from urllib.request import urlretrieve
 from src.constants import ANALYSIS_SUMMARY_COL_NAMES
 
@@ -20,6 +22,7 @@ def fetch_study_data(api_path, study_metadata, sample_count=6):
             print(f"fetching {study.id} samples")
             samples = map(lambda r: r.json, mgnify.iterate(f'studies/{study.id}/samples?page_size=1000'))
             samples = pd.json_normalize(samples)
+            print(samples)
             samples = pd.DataFrame(data={
                 'accession': samples['id'],
                 'sample_id': samples['id'],
@@ -45,9 +48,15 @@ def get_sample_analyses(api_path, study_samples, analysis_limit=10):
             filtering = Modifier(f"sample_accession={sample.sample_id}")
             analysis = map(lambda r: r.json, mgnify.iterate('analyses', filter=filtering))
             analysis = pd.json_normalize(analysis)
+            analysis['sample_id'] = sample.sample_id
+            analysis['sample_description'] = sample.sample_description
+            analysis['environment'] = sample.environment
             analyses.append(analysis)
+    print(f"THERE ARE {len(analyses)} being added to the df")
     analyses_df = pd.concat(analyses)
+    print(f"the df is {analyses_df.shape}")
     analyses_df[ANALYSIS_SUMMARY_COL_NAMES] = analyses_df.apply(handle_analysis_summary, axis='columns', result_type='expand')
+    print(f"but now the df is {analyses_df.shape}")
     return analyses_df
 
 
@@ -58,24 +67,39 @@ def handle_analysis_summary(row):
         analysis_values.append(sample_row_summaries[i]['value'])
     return analysis_values
 
-def check_available_sample_analysis_data(api_path, analysis_id):
+def check_available_sample_analysis_data(api_path, analysis_ids):
+    analysis_files = {}
     with Session(api_path) as session:
-        print(f"\nFiles available for analysis {analysis_id}:")
-        for download in session.iterate(f"analyses/{analysis_id}/downloads"):
-            print(f"{download.alias}: {download.description.label}")
-            print(f"relevant url: {download.links.self.url}")
+        for analysis_id in analysis_ids:
+            analysis_files[analysis_id] = []
+            for download in session.iterate(f"analyses/{analysis_id}/downloads"):
+                file_info = {
+                    "alias": download.alias, 
+                    "description": download.description.label,
+                    "url":download.links.self.url}
+                analysis_files[analysis_id].append(file_info)
+    return analysis_files
 
 
-def get_data_file(file_path, download_url):
-    # with Session(api_path) as session:    
-        # print(f"Processing: {analysis_id}")
-        # for download in session.iterate(f"analyses/{analysis_id}/downloads"):
-        #     # Start another for loop to go over the files to download
-        #     file_name = f"../tmp/{analysis_id}_FASTQ_SSU_OTU.tsv"
-        #     print(f"Downloading file for {analysis_id}")
-        #     try:
+def get_data_file(file_storage_path, download_url):
     try:
-        urlretrieve(download_url, file_path)
+        urlretrieve(download_url, file_storage_path)
     except Exception as e:
         print(e)
-    # print(f"Finished for: {analysis_id}, stored: {file_path}")
+
+
+def get_SSU_tsv_file_list_for_study(analyses_file_info, study_id):
+    tsv_files = {}
+    for analysis, files in analyses_file_info[study_id].items():
+        for file in files:
+            if file['description'] == "Reads encoding SSU rRNA" and file['url'].endswith('tsv'):
+                tsv_files[analysis] = file['url']
+    return tsv_files
+
+
+def get_tsv_files(tsv_files, file_root="..metagenomics/tmp/"):
+    # make dir for study if it doesnt exist
+    Path(file_root).mkdir(parents=True, exist_ok=True)
+    for analysis_id, url in tsv_files.items():
+        file_path = os.path.join(file_root, f"{analysis_id}_FASTQ_SSU_OTU.tsv")
+        get_data_file(file_path, url)

@@ -10,3 +10,4 @@ jsonapi_client
 leafmap
 geopandas
 biom-format
+scikit-bio
