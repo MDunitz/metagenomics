@@ -69,3 +69,11 @@ def build_otu_count_df_and_lookup_df(directory):
         count_df = build_otu_count_df(df, count_df)
         otu_df = build_otu_lookup_df(df, otu_df)
     return otu_df, count_df
+
+def create_sample_desc(row):
+    desc = row['sample_description']
+    if 'biofilms' in desc:
+        return "Biofilm on Macrocystis pyrifera"
+    else:
+        return "seawater" 
+    

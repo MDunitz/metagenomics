@@ -22,7 +22,6 @@ def fetch_study_data(api_path, study_metadata, sample_count=6):
             print(f"fetching {study.id} samples")
             samples = map(lambda r: r.json, mgnify.iterate(f'studies/{study.id}/samples?page_size=1000'))
             samples = pd.json_normalize(samples)
-            print(samples)
             samples = pd.DataFrame(data={
                 'accession': samples['id'],
                 'sample_id': samples['id'],
